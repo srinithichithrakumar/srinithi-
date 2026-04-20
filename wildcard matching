@@ -1,0 +1,30 @@
+class Solution:
+    def isMatch(self, s: str, p: str) -> bool:
+        s_ptr, p_ptr = 0, 0
+        star_idx = -1
+        s_tmp_idx = -1
+        
+        while s_ptr < len(s):
+            # If characters match or pattern has '?'
+            if p_ptr < len(p) and (p[p_ptr] == '?' or p[p_ptr] == s[s_ptr]):
+                s_ptr += 1
+                p_ptr += 1
+            
+            # If pattern has '*', mark the position and try matching 0 chars first
+            elif p_ptr < len(p) and p[p_ptr] == '*':
+                star_idx = p_ptr
+                s_tmp_idx = s_ptr
+                p_ptr += 1
+            
+            # If mismatch occurs but we saw a '*' earlier, backtrack
+            elif star_idx != -1:
+                p_ptr = star_idx + 1
+                s_tmp_idx += 1
+                s_ptr = s_tmp_idx
+            
+            # Mismatch and no '*' to fall back on
+            else:
+                return False
+        
+        # Check if remaining pattern characters are all '*'
+        return all(x == '*' for x in p[p_ptr:])
