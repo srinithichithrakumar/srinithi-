@@ -1,0 +1,40 @@
+class Solution:
+    def maxPalindromes(self, s: str, k: int) -> int:
+        n = len(s)
+        # dp[i] = max number of non-overlapping palindromes in s[0...i-1]
+        dp = [0] * (n + 1)
+        
+        for i in range(n):
+            # Option 1: Don't include s[i] in a new palindrome
+            dp[i + 1] = max(dp[i + 1], dp[i])
+            
+            # Check for palindromes starting at various centers
+            # We only need to check lengths k and k+1 to maximize the total count
+            for length in [k, k + 1]:
+                # We want to check if a palindrome of 'length' ends at index i + length - 1
+                # But it's easier to check palindromes centered around i
+                pass 
+
+        # Correct approach: Greedy + Center Expansion
+        count = 0
+        last_end = -1
+        
+        for center in range(2 * n - 1):
+            # center can be a character (even) or between characters (odd)
+            l = center // 2
+            r = l + center % 2
+            
+            while l >= 0 and r < n and s[l] == s[r]:
+                curr_len = r - l + 1
+                if curr_len >= k:
+                    # If this palindrome starts after the last one we picked
+                    if l > last_end:
+                        count += 1
+                        last_end = r
+                    # Once we find the shortest valid palindrome for this center,
+                    # we stop to remain greedy (shorter is better)
+                    break
+                l -= 1
+                r += 1
+                
+        return count
