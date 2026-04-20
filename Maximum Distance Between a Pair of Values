@@ -1,0 +1,57 @@
+from collections import defaultdict
+
+class Solution:
+    def countPalindromePaths(self, parent: list[int], s: str) -> int:
+        n = len(parent)
+        adj = [[] for _ in range(n)]
+        for i in range(1, n):
+            adj[parent[i]].append(i)
+            
+        # map to store the frequency of each mask encountered
+        mask_counts = defaultdict(int)
+        mask_counts[0] = 1
+        ans = 0
+        
+        # We use a stack for iterative DFS to avoid recursion limits
+        # (node, current_mask)
+        stack = [(0, 0)]
+        
+        # Pre-calculate powers of 2 for the 26 lowercase letters
+        powers_of_2 = [1 << i for i in range(26)]
+        
+        # Since we need to visit children, we'll perform a standard DFS
+        # However, to count pairs correctly, we need the masks of all nodes.
+        # We can calculate masks in one pass.
+        
+        node_masks = [0] * n
+        order = []
+        stack = [0]
+        while stack:
+            u = stack.pop()
+            order.append(u)
+            for v in adj[u]:
+                # char_idx: a=0, b=1, ...
+                char_idx = ord(s[v]) - ord('a')
+                node_masks[v] = node_masks[u] ^ (1 << char_idx)
+                stack.append(v)
+        
+        # Now count pairs using the frequency map
+        # We process nodes (excluding root at the start because it's already in map)
+        seen_masks = {0: 1}
+        ans = 0
+        
+        for i in range(1, n):
+            curr_mask = node_masks[i]
+            
+            # Case 1: Mask(u) ^ Mask(v) == 0 (The path has all even frequencies)
+            ans += seen_masks.get(curr_mask, 0)
+            
+            # Case 2: Mask(u) ^ Mask(v) == 2^k (The path has exactly one odd frequency)
+            for p in powers_of_2:
+                target = curr_mask ^ p
+                ans += seen_masks.get(target, 0)
+            
+            # Add current mask to the map for future nodes
+            seen_masks[curr_mask] = seen_masks.get(curr_mask, 0) + 1
+            
+        return ans
